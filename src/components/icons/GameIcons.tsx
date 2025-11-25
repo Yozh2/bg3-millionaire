@@ -154,65 +154,64 @@ export const StarIcon = () => (
 /** D20 dice showing critical fail (1) - used for game over screen */
 export const CriticalFailIcon = () => (
   <svg viewBox="0 0 64 64" className="w-20 h-20 mx-auto">
-    {/* D20 icosahedron shape */}
+    {/* D20 icosahedron - triangular faces visible from front */}
+    {/* Main outer triangle shape */}
     <polygon
-      points="32,2 58,18 58,46 32,62 6,46 6,18"
+      points="32,4 60,54 4,54"
       fill="#1a1a2e"
       stroke="#dc2626"
       strokeWidth="2"
     />
-    {/* Inner facets */}
+    {/* Top inner triangle */}
     <polygon
-      points="32,2 58,18 32,32"
+      points="32,4 44,30 20,30"
       fill="#2d2d44"
       stroke="#991b1b"
       strokeWidth="1"
     />
+    {/* Bottom left triangle */}
     <polygon
-      points="32,2 6,18 32,32"
+      points="20,30 4,54 32,54"
       fill="#252538"
       stroke="#991b1b"
       strokeWidth="1"
     />
+    {/* Bottom right triangle */}
     <polygon
-      points="58,18 58,46 32,32"
+      points="44,30 60,54 32,54"
       fill="#1f1f33"
       stroke="#991b1b"
       strokeWidth="1"
     />
+    {/* Center triangle (main face with number) */}
     <polygon
-      points="6,18 6,46 32,32"
+      points="20,30 44,30 32,54"
       fill="#2a2a3e"
       stroke="#991b1b"
       strokeWidth="1"
     />
+    {/* Small top triangles for detail */}
     <polygon
-      points="32,62 58,46 32,32"
-      fill="#232337"
+      points="32,4 26,17 38,17"
+      fill="#333350"
       stroke="#991b1b"
-      strokeWidth="1"
-    />
-    <polygon
-      points="32,62 6,46 32,32"
-      fill="#1c1c30"
-      stroke="#991b1b"
-      strokeWidth="1"
+      strokeWidth="0.5"
     />
     {/* The number 1 - critical fail */}
     <text
       x="32"
-      y="40"
+      y="46"
       textAnchor="middle"
-      fontSize="24"
+      fontSize="20"
       fontWeight="bold"
       fill="#ef4444"
       style={{ textShadow: '0 0 10px #ef4444' }}
     >
       1
     </text>
-    {/* Glow effect */}
+    {/* Outer glow effect */}
     <polygon
-      points="32,2 58,18 58,46 32,62 6,46 6,18"
+      points="32,4 60,54 4,54"
       fill="none"
       stroke="#ef4444"
       strokeWidth="1"

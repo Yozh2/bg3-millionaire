@@ -29,6 +29,7 @@ import {
   CriticalFailIcon,
 } from './components/icons';
 import { Panel, PanelHeader } from './components/ui';
+import { ThemeProvider, getThemeColors } from './context';
 import { getQuestionsForMode, prizes, guaranteedPrizes, companionNames } from './data';
 import { Question, Hint, GameState, DifficultyMode } from './types';
 
@@ -105,88 +106,8 @@ export default function BG3Millionaire() {
     return 'radial-gradient(ellipse at center, #1f0a0a 0%, #100404 50%, #000 100%)';
   };
 
-  /** Get theme colors based on mode */
-  const getThemeColors = () => {
-    if (!selectedMode || selectedMode === 'hero') {
-      return {
-        primary: 'amber',
-        textPrimary: 'text-amber-400',
-        textSecondary: 'text-amber-200',
-        textMuted: 'text-amber-700',
-        textAccent: 'text-amber-100',
-        border: 'border-amber-800',
-        borderLight: 'border-amber-600',
-        borderHover: 'hover:border-amber-600',
-        bgPanel: 'from-amber-950/90 via-stone-900/95 to-stone-950/90',
-        bgButton: 'from-amber-700 via-amber-800 to-amber-900',
-        bgButtonHover: 'hover:from-amber-600 hover:via-amber-700 hover:to-amber-800',
-        bgAnswer: 'from-amber-950 via-stone-900 to-neutral-950',
-        bgAnswerHover: 'hover:from-amber-900 hover:to-stone-900',
-        bgLifeline: 'from-amber-700 to-amber-900',
-        bgPrizeCurrent: 'bg-amber-900/60',
-        bgPrizePassed: 'bg-amber-950/40',
-        textLifeline: 'text-amber-100',
-        borderLifeline: 'border-amber-500',
-        shadowAnswer: 'hover:shadow-amber-900/50',
-        glow: 'rgba(217, 119, 6, 0.5)',
-        glowColor: '#fbbf24',
-        glowSecondary: '#d97706',
-      };
-    }
-    if (selectedMode === 'illithid') {
-      return {
-        primary: 'purple',
-        textPrimary: 'text-purple-400',
-        textSecondary: 'text-purple-200',
-        textMuted: 'text-purple-700',
-        textAccent: 'text-purple-100',
-        border: 'border-purple-800',
-        borderLight: 'border-purple-600',
-        borderHover: 'hover:border-purple-600',
-        bgPanel: 'from-purple-950/90 via-indigo-950/95 to-stone-950/90',
-        bgButton: 'from-purple-700 via-purple-800 to-purple-900',
-        bgButtonHover: 'hover:from-purple-600 hover:via-purple-700 hover:to-purple-800',
-        bgAnswer: 'from-purple-950 via-indigo-950 to-neutral-950',
-        bgAnswerHover: 'hover:from-purple-900 hover:to-indigo-950',
-        bgLifeline: 'from-purple-700 to-purple-900',
-        bgPrizeCurrent: 'bg-purple-900/60',
-        bgPrizePassed: 'bg-purple-950/40',
-        textLifeline: 'text-purple-100',
-        borderLifeline: 'border-purple-500',
-        shadowAnswer: 'hover:shadow-purple-900/50',
-        glow: 'rgba(168, 85, 247, 0.5)',
-        glowColor: '#a855f7',
-        glowSecondary: '#7c3aed',
-      };
-    }
-    // darkUrge
-    return {
-      primary: 'red',
-      textPrimary: 'text-red-400',
-      textSecondary: 'text-red-200',
-      textMuted: 'text-red-700',
-      textAccent: 'text-red-100',
-      border: 'border-red-800',
-      borderLight: 'border-red-600',
-      borderHover: 'hover:border-red-600',
-      bgPanel: 'from-red-950/90 via-stone-900/95 to-stone-950/90',
-      bgButton: 'from-red-700 via-red-800 to-red-900',
-      bgButtonHover: 'hover:from-red-600 hover:via-red-700 hover:to-red-800',
-      bgAnswer: 'from-red-950 via-stone-900 to-neutral-950',
-      bgAnswerHover: 'hover:from-red-900 hover:to-stone-900',
-      bgLifeline: 'from-red-700 to-red-900',
-      bgPrizeCurrent: 'bg-red-900/60',
-      bgPrizePassed: 'bg-red-950/40',
-      textLifeline: 'text-red-100',
-      borderLifeline: 'border-red-500',
-      shadowAnswer: 'hover:shadow-red-900/50',
-      glow: 'rgba(239, 68, 68, 0.5)',
-      glowColor: '#ef4444',
-      glowSecondary: '#dc2626',
-    };
-  };
-
-  const theme = getThemeColors();
+  /** Theme colors from context */
+  const theme = getThemeColors(selectedMode);
 
   // ============================================
   // Audio Controls
@@ -435,28 +356,29 @@ export default function BG3Millionaire() {
   if (gameState === 'playing' && sortedQuestions.length === 0) return null;
 
   return (
-    <div
-      className="min-h-screen p-4 transition-all duration-500"
-      style={{
-        background: getBackgroundStyle(),
-        fontFamily: 'Georgia, serif',
-      }}
-    >
-      {/* Background Music */}
-      <audio id="bg-music" loop preload="auto">
-        <source src="https://files.catbox.moe/cnhb0v.mp3" type="audio/mpeg" />
-      </audio>
+    <ThemeProvider mode={selectedMode}>
+      <div
+        className="min-h-screen p-4 transition-all duration-500"
+        style={{
+          background: getBackgroundStyle(),
+          fontFamily: 'Georgia, serif',
+        }}
+      >
+        {/* Background Music */}
+        <audio id="bg-music" loop preload="auto">
+          <source src="https://files.catbox.moe/cnhb0v.mp3" type="audio/mpeg" />
+        </audio>
 
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <Panel className="mb-4 p-1">
-          <PanelHeader>✦ ДРЕВНИЙ СВИТОК ✦ СРОЧНЫЙ КВЕСТ ✦</PanelHeader>
-          <div className="p-4 text-center">
-            {/* Music Toggle */}
-            <div className="flex justify-end mb-2">
-              <button
-                onClick={toggleMusic}
-                className="text-2xl hover:scale-110 transition-transform"
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <Panel className="mb-4 p-1">
+            <PanelHeader>✦ ДРЕВНИЙ СВИТОК ✦ СРОЧНЫЙ КВЕСТ ✦</PanelHeader>
+            <div className="p-4 text-center">
+              {/* Music Toggle */}
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={toggleMusic}
+                  className="text-2xl hover:scale-110 transition-transform"
                 title={isMusicPlaying ? 'Выключить музыку' : 'Включить музыку'}
               >
                 {isMusicPlaying ? '🔊' : '🔇'}
@@ -566,7 +488,7 @@ export default function BG3Millionaire() {
                       ГЕРОЙ
                     </span>
                     <span className="text-xs text-stone-500 font-serif">
-                      Лёгкие
+                      Легко
                     </span>
                   </button>
 
@@ -597,7 +519,7 @@ export default function BG3Millionaire() {
                       ИЛЛИТИД
                     </span>
                     <span className="text-xs text-stone-500 font-serif">
-                      Средние
+                      Доблесть
                     </span>
                   </button>
 
@@ -628,7 +550,7 @@ export default function BG3Millionaire() {
                       СОБЛАЗН
                     </span>
                     <span className="text-xs text-stone-500 font-serif">
-                      Сложные
+                      Сложно
                     </span>
                   </button>
                 </div>
@@ -639,12 +561,12 @@ export default function BG3Millionaire() {
                 disabled={!selectedMode}
                 className={`px-8 py-3 font-bold text-lg tracking-wide border-4 transition-all transform font-serif ${
                   selectedMode
-                    ? 'bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-50 border-amber-600 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 hover:scale-105'
+                    ? `bg-gradient-to-b ${theme.bgButton} text-white ${theme.borderLight} ${theme.bgButtonHover} hover:scale-105`
                     : 'bg-gradient-to-b from-stone-700 via-stone-800 to-stone-900 text-stone-500 border-stone-600 cursor-not-allowed'
                 }`}
                 style={{
                   boxShadow: selectedMode
-                    ? '0 0 25px rgba(217, 119, 6, 0.5), inset 0 1px 0 rgba(251, 191, 36, 0.3)'
+                    ? `0 0 25px ${theme.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`
                     : 'none',
                   borderStyle: 'ridge',
                   textShadow: selectedMode ? '0 2px 4px rgba(0,0,0,0.8)' : 'none',
@@ -960,10 +882,11 @@ export default function BG3Millionaire() {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-4 text-orange-600 text-xs tracking-wide font-serif italic">
+        <div className={`text-center mt-4 text-xs tracking-wide font-serif italic ${theme.textMuted}`}>
           ✦ By Mystra's Grace ✦ For the Realms ✦ Gather Your Party ✦
         </div>
       </div>
     </div>
+    </ThemeProvider>
   );
 }
