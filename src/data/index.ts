@@ -1,4 +1,12 @@
 /**
  * Game data barrel export.
  */
-export { questions, prizes, guaranteedPrizes, companionNames } from './questions';
+export {
+  heroQuestions,
+  illithidQuestions,
+  darkUrgeQuestions,
+  getQuestionsForMode,
+  prizes,
+  guaranteedPrizes,
+  companionNames,
+} from './questions';

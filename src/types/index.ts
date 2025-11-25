@@ -2,6 +2,9 @@
  * Type definitions for the quiz game.
  */
 
+/** Difficulty modes corresponding to character origins */
+export type DifficultyMode = 'hero' | 'illithid' | 'darkUrge';
+
 /** Represents a single quiz question */
 export interface Question {
   /** The question text displayed to the player */

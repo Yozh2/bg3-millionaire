@@ -29,8 +29,8 @@ import {
   StarIcon,
 } from './components/icons';
 import { Panel, PanelHeader } from './components/ui';
-import { questions, prizes, guaranteedPrizes, companionNames } from './data';
-import { Question, Hint, GameState } from './types';
+import { getQuestionsForMode, prizes, guaranteedPrizes, companionNames } from './data';
+import { Question, Hint, GameState, DifficultyMode } from './types';
 
 /**
  * Main game component.
@@ -64,6 +64,9 @@ export default function BG3Millionaire() {
   /** Questions sorted by difficulty */
   const [sortedQuestions, setSortedQuestions] = useState<Question[]>([]);
 
+  /** Selected difficulty mode */
+  const [selectedMode, setSelectedMode] = useState<DifficultyMode>('hero');
+
   /** Prize amount won */
   const [wonPrize, setWonPrize] = useState('0');
 
@@ -79,9 +82,10 @@ export default function BG3Millionaire() {
 
   /** Sort questions by difficulty on mount */
   useEffect(() => {
+    const questions = getQuestionsForMode(selectedMode);
     const sorted = [...questions].sort((a, b) => a.difficulty - b.difficulty);
     setSortedQuestions(sorted);
-  }, []);
+  }, [selectedMode]);
 
   // ============================================
   // Audio Controls
@@ -124,6 +128,7 @@ export default function BG3Millionaire() {
     }
 
     // Reset game state
+    const questions = getQuestionsForMode(selectedMode);
     const sorted = [...questions].sort((a, b) => a.difficulty - b.difficulty);
     setSortedQuestions(sorted);
     setCurrentQuestion(0);
@@ -163,7 +168,7 @@ export default function BG3Millionaire() {
       } else {
         // Wrong answer - game over
         const lastGuaranteed = guaranteedPrizes
-          .filter((p) => p < currentQuestion)
+          .filter((p: number) => p < currentQuestion)
           .pop();
         setWonPrize(lastGuaranteed !== undefined ? prizes[lastGuaranteed] : '0');
         setGameState('lost');
@@ -363,19 +368,43 @@ export default function BG3Millionaire() {
               [ BALDUR'S GATE 3 EDITION ]
             </h2>
 
-            {/* Theme Icons */}
+            {/* Theme Icons - show selected mode */}
             <div className="flex justify-center gap-6 mt-3">
-              <div className="flex items-center gap-1">
+              <div
+                className={`flex items-center gap-1 transition-opacity ${
+                  gameState !== 'start' && selectedMode === 'hero'
+                    ? 'opacity-100'
+                    : gameState === 'start'
+                      ? 'opacity-100'
+                      : 'opacity-30'
+                }`}
+              >
                 <SwordIcon />
                 <span className="text-blue-400 text-xs font-serif">ГЕРОЙ</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div
+                className={`flex items-center gap-1 transition-opacity ${
+                  gameState !== 'start' && selectedMode === 'illithid'
+                    ? 'opacity-100'
+                    : gameState === 'start'
+                      ? 'opacity-100'
+                      : 'opacity-30'
+                }`}
+              >
                 <MindFlayerIcon />
                 <span className="text-purple-400 text-xs font-serif">
                   ИЛЛИТИД
                 </span>
               </div>
-              <div className="flex items-center gap-1">
+              <div
+                className={`flex items-center gap-1 transition-opacity ${
+                  gameState !== 'start' && selectedMode === 'darkUrge'
+                    ? 'opacity-100'
+                    : gameState === 'start'
+                      ? 'opacity-100'
+                      : 'opacity-30'
+                }`}
+              >
                 <DarkUrgeIcon />
                 <span className="text-red-400 text-xs font-serif">СОБЛАЗН</span>
               </div>
@@ -387,13 +416,114 @@ export default function BG3Millionaire() {
         {gameState === 'start' && (
           <Panel className="p-1">
             <PanelHeader>✦ СВИТОК КВЕСТА ✦</PanelHeader>
-            <div className="text-center py-12 px-4">
-              <SwordIcon />
-              <p className="text-amber-200 text-base mb-8 max-w-md mx-auto leading-relaxed mt-4 font-serif">
+            <div className="text-center py-8 px-4">
+              <p className="text-amber-200 text-base mb-6 max-w-md mx-auto leading-relaxed font-serif">
                 Искатель приключений! Перед тобой испытание на знание Забытых
                 Королевств. 15 вопросов, 3 магические подсказки, 3,000,000
                 золотых на кону.
               </p>
+
+              {/* Difficulty Selection */}
+              <div className="mb-8">
+                <p className="text-amber-400 text-sm mb-4 font-serif tracking-wide">
+                  ✦ ВЫБЕРИ ПУТЬ ✦
+                </p>
+                <div className="flex justify-center gap-4 md:gap-6">
+                  {/* Hero Mode */}
+                  <button
+                    onClick={() => setSelectedMode('hero')}
+                    className={`flex flex-col items-center gap-2 p-3 md:p-4 border-4 transition-all transform hover:scale-105 ${
+                      selectedMode === 'hero'
+                        ? 'border-blue-500 bg-blue-950/50'
+                        : 'border-stone-700 bg-stone-950/50 hover:border-blue-700'
+                    }`}
+                    style={{
+                      borderStyle: 'ridge',
+                      boxShadow:
+                        selectedMode === 'hero'
+                          ? '0 0 25px rgba(59, 130, 246, 0.6), inset 0 0 15px rgba(59, 130, 246, 0.2)'
+                          : 'none',
+                    }}
+                  >
+                    <SwordIcon />
+                    <span
+                      className={`text-sm font-serif font-bold ${
+                        selectedMode === 'hero'
+                          ? 'text-blue-300'
+                          : 'text-blue-500'
+                      }`}
+                    >
+                      ГЕРОЙ
+                    </span>
+                    <span className="text-xs text-stone-500 font-serif">
+                      Лёгкие
+                    </span>
+                  </button>
+
+                  {/* Illithid Mode */}
+                  <button
+                    onClick={() => setSelectedMode('illithid')}
+                    className={`flex flex-col items-center gap-2 p-3 md:p-4 border-4 transition-all transform hover:scale-105 ${
+                      selectedMode === 'illithid'
+                        ? 'border-purple-500 bg-purple-950/50'
+                        : 'border-stone-700 bg-stone-950/50 hover:border-purple-700'
+                    }`}
+                    style={{
+                      borderStyle: 'ridge',
+                      boxShadow:
+                        selectedMode === 'illithid'
+                          ? '0 0 25px rgba(168, 85, 247, 0.6), inset 0 0 15px rgba(168, 85, 247, 0.2)'
+                          : 'none',
+                    }}
+                  >
+                    <MindFlayerIcon />
+                    <span
+                      className={`text-sm font-serif font-bold ${
+                        selectedMode === 'illithid'
+                          ? 'text-purple-300'
+                          : 'text-purple-500'
+                      }`}
+                    >
+                      ИЛЛИТИД
+                    </span>
+                    <span className="text-xs text-stone-500 font-serif">
+                      Средние
+                    </span>
+                  </button>
+
+                  {/* Dark Urge Mode */}
+                  <button
+                    onClick={() => setSelectedMode('darkUrge')}
+                    className={`flex flex-col items-center gap-2 p-3 md:p-4 border-4 transition-all transform hover:scale-105 ${
+                      selectedMode === 'darkUrge'
+                        ? 'border-red-500 bg-red-950/50'
+                        : 'border-stone-700 bg-stone-950/50 hover:border-red-700'
+                    }`}
+                    style={{
+                      borderStyle: 'ridge',
+                      boxShadow:
+                        selectedMode === 'darkUrge'
+                          ? '0 0 25px rgba(239, 68, 68, 0.6), inset 0 0 15px rgba(239, 68, 68, 0.2)'
+                          : 'none',
+                    }}
+                  >
+                    <DarkUrgeIcon />
+                    <span
+                      className={`text-sm font-serif font-bold ${
+                        selectedMode === 'darkUrge'
+                          ? 'text-red-300'
+                          : 'text-red-500'
+                      }`}
+                    >
+                      СОБЛАЗН
+                    </span>
+                    <span className="text-xs text-stone-500 font-serif">
+                      Сложные
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               <button
                 onClick={startGame}
                 className="px-8 py-3 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-50 font-bold text-lg tracking-wide border-4 border-amber-600 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 transition-all transform hover:scale-105 font-serif"
@@ -595,7 +725,7 @@ export default function BG3Millionaire() {
               <PanelHeader>✦ СПИСОК НАГРАД ✦</PanelHeader>
               <div className="p-2 space-y-1">
                 {prizes
-                  .map((prize, index) => {
+                  .map((prize: string, index: number) => {
                     const isGuaranteed = guaranteedPrizes.includes(index);
                     const isCurrent = index === currentQuestion;
                     const isPassed = index < currentQuestion;
