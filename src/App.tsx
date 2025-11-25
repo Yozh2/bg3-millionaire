@@ -70,6 +70,9 @@ export default function BG3Millionaire() {
   /** Background music state */
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
+  /** Track if user manually disabled music (don't auto-play if true) */
+  const [userDisabledMusic, setUserDisabledMusic] = useState(false);
+
   // ============================================
   // Effects
   // ============================================
@@ -92,10 +95,14 @@ export default function BG3Millionaire() {
     if (isMusicPlaying) {
       audio.pause();
       setIsMusicPlaying(false);
+      setUserDisabledMusic(true); // User manually disabled
     } else {
       audio
         .play()
-        .then(() => setIsMusicPlaying(true))
+        .then(() => {
+          setIsMusicPlaying(true);
+          setUserDisabledMusic(false); // User re-enabled
+        })
         .catch((err: Error) => console.log('Music play failed:', err));
     }
   };
@@ -107,8 +114,9 @@ export default function BG3Millionaire() {
   /** Start a new game, reset all state */
   const startGame = () => {
     // Try to start music on game start (requires user interaction)
+    // But only if user hasn't manually disabled it
     const audio = document.getElementById('bg-music') as HTMLAudioElement | null;
-    if (audio && !isMusicPlaying) {
+    if (audio && !isMusicPlaying && !userDisabledMusic) {
       audio
         .play()
         .then(() => setIsMusicPlaying(true))
