@@ -64,8 +64,8 @@ export default function BG3Millionaire() {
   /** Questions sorted by difficulty */
   const [sortedQuestions, setSortedQuestions] = useState<Question[]>([]);
 
-  /** Selected difficulty mode */
-  const [selectedMode, setSelectedMode] = useState<DifficultyMode>('hero');
+  /** Selected difficulty mode (null when not yet selected) */
+  const [selectedMode, setSelectedMode] = useState<DifficultyMode | null>(null);
 
   /** Prize amount won */
   const [wonPrize, setWonPrize] = useState('0');
@@ -80,12 +80,74 @@ export default function BG3Millionaire() {
   // Effects
   // ============================================
 
-  /** Sort questions by difficulty on mount */
+  /** Sort questions by difficulty when mode is selected */
   useEffect(() => {
-    const questions = getQuestionsForMode(selectedMode);
-    const sorted = [...questions].sort((a, b) => a.difficulty - b.difficulty);
-    setSortedQuestions(sorted);
+    if (selectedMode) {
+      const questions = getQuestionsForMode(selectedMode);
+      const sorted = [...questions].sort((a, b) => a.difficulty - b.difficulty);
+      setSortedQuestions(sorted);
+    }
   }, [selectedMode]);
+
+  // ============================================
+  // Color Theme based on selected mode
+  // ============================================
+
+  /** Get background gradient based on mode */
+  const getBackgroundStyle = () => {
+    if (!selectedMode || selectedMode === 'hero') {
+      return 'radial-gradient(ellipse at center, #1a0f0a 0%, #0d0604 50%, #000 100%)';
+    }
+    if (selectedMode === 'illithid') {
+      return 'radial-gradient(ellipse at center, #1a0a1f 0%, #0d0410 50%, #000 100%)';
+    }
+    // darkUrge
+    return 'radial-gradient(ellipse at center, #1f0a0a 0%, #100404 50%, #000 100%)';
+  };
+
+  /** Get theme colors based on mode */
+  const getThemeColors = () => {
+    if (!selectedMode || selectedMode === 'hero') {
+      return {
+        primary: 'amber',
+        textPrimary: 'text-amber-400',
+        textSecondary: 'text-amber-200',
+        textMuted: 'text-amber-700',
+        border: 'border-amber-800',
+        borderHover: 'hover:border-amber-600',
+        glow: 'rgba(217, 119, 6, 0.5)',
+        glowColor: '#fbbf24',
+        glowSecondary: '#d97706',
+      };
+    }
+    if (selectedMode === 'illithid') {
+      return {
+        primary: 'purple',
+        textPrimary: 'text-purple-400',
+        textSecondary: 'text-purple-200',
+        textMuted: 'text-purple-700',
+        border: 'border-purple-800',
+        borderHover: 'hover:border-purple-600',
+        glow: 'rgba(168, 85, 247, 0.5)',
+        glowColor: '#a855f7',
+        glowSecondary: '#7c3aed',
+      };
+    }
+    // darkUrge
+    return {
+      primary: 'red',
+      textPrimary: 'text-red-400',
+      textSecondary: 'text-red-200',
+      textMuted: 'text-red-700',
+      border: 'border-red-800',
+      borderHover: 'hover:border-red-600',
+      glow: 'rgba(239, 68, 68, 0.5)',
+      glowColor: '#ef4444',
+      glowSecondary: '#dc2626',
+    };
+  };
+
+  const theme = getThemeColors();
 
   // ============================================
   // Audio Controls
@@ -117,6 +179,9 @@ export default function BG3Millionaire() {
 
   /** Start a new game, reset all state */
   const startGame = () => {
+    // Don't start if no mode selected
+    if (!selectedMode) return;
+
     // Try to start music on game start (requires user interaction)
     // But only if user hasn't manually disabled it
     const audio = document.getElementById('bg-music') as HTMLAudioElement | null;
@@ -134,6 +199,20 @@ export default function BG3Millionaire() {
     setCurrentQuestion(0);
     setSelectedAnswer(null);
     setGameState('playing');
+    setFiftyFifty(true);
+    setPhoneAFriend(true);
+    setAskAudience(true);
+    setEliminatedAnswers([]);
+    setShowHint(null);
+    setWonPrize('0');
+  };
+
+  /** Return to start screen for new game with difficulty selection */
+  const newGame = () => {
+    setGameState('start');
+    setSelectedMode(null);
+    setCurrentQuestion(0);
+    setSelectedAnswer(null);
     setFiftyFifty(true);
     setPhoneAFriend(true);
     setAskAudience(true);
@@ -313,15 +392,14 @@ export default function BG3Millionaire() {
   // Render
   // ============================================
 
-  // Wait for questions to load
-  if (sortedQuestions.length === 0) return null;
+  // Wait for questions to load (only when mode is selected)
+  if (gameState === 'playing' && sortedQuestions.length === 0) return null;
 
   return (
     <div
-      className="min-h-screen p-4"
+      className="min-h-screen p-4 transition-all duration-500"
       style={{
-        background:
-          'radial-gradient(ellipse at center, #1a0f0a 0%, #0d0604 50%, #000 100%)',
+        background: getBackgroundStyle(),
         fontFamily: 'Georgia, serif',
       }}
     >
@@ -348,67 +426,60 @@ export default function BG3Millionaire() {
 
             {/* Title */}
             <h1
-              className="text-2xl md:text-3xl font-bold text-amber-400 tracking-wider mb-1"
+              className={`text-2xl md:text-3xl font-bold tracking-wider mb-1 transition-colors duration-500 ${theme.textPrimary}`}
               style={{
                 textShadow:
-                  '0 0 15px #fbbf24, 0 0 30px #d97706, 2px 2px 4px #000',
+                  `0 0 15px ${theme.glowColor}, 0 0 30px ${theme.glowSecondary}, 2px 2px 4px #000`,
                 fontFamily: 'Georgia, serif',
               }}
             >
               КТО ХОЧЕТ СТАТЬ МИЛЛИОНЕРОМ
             </h1>
             <h2
-              className="text-lg text-amber-600 tracking-wide"
+              className={`text-lg tracking-wide transition-colors duration-500 ${
+                selectedMode === 'illithid' ? 'text-purple-600' :
+                selectedMode === 'darkUrge' ? 'text-red-600' : 'text-amber-600'
+              }`}
               style={{
                 lineHeight: '1.5',
                 fontFamily: 'Arial, sans-serif',
                 fontStyle: 'italic',
               }}
             >
-              [ BALDUR'S GATE 3 EDITION ]
+              BALDUR'S GATE 3 EDITION
             </h2>
 
-            {/* Theme Icons - show selected mode */}
-            <div className="flex justify-center gap-6 mt-3">
-              <div
-                className={`flex items-center gap-1 transition-opacity ${
-                  gameState !== 'start' && selectedMode === 'hero'
-                    ? 'opacity-100'
-                    : gameState === 'start'
-                      ? 'opacity-100'
-                      : 'opacity-30'
-                }`}
-              >
-                <SwordIcon />
-                <span className="text-blue-400 text-xs font-serif">ГЕРОЙ</span>
+            {/* Theme Icons - only show when mode is selected (not on start screen) */}
+            {gameState !== 'start' && selectedMode && (
+              <div className="flex justify-center gap-6 mt-3">
+                <div
+                  className={`flex items-center gap-1 transition-opacity ${
+                    selectedMode === 'hero' ? 'opacity-100' : 'opacity-30'
+                  }`}
+                >
+                  <SwordIcon />
+                  <span className="text-blue-400 text-xs font-serif">ГЕРОЙ</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1 transition-opacity ${
+                    selectedMode === 'illithid' ? 'opacity-100' : 'opacity-30'
+                  }`}
+                >
+                  <MindFlayerIcon />
+                  <span className="text-purple-400 text-xs font-serif">
+                    ИЛЛИТИД
+                  </span>
+                </div>
+                <div
+                  className={`flex items-center gap-1 transition-opacity ${
+                    selectedMode === 'darkUrge' ? 'opacity-100' : 'opacity-30'
+                  }`}
+                >
+                  <DarkUrgeIcon />
+                  <span className="text-red-400 text-xs font-serif">СОБЛАЗН</span>
+                </div>
               </div>
-              <div
-                className={`flex items-center gap-1 transition-opacity ${
-                  gameState !== 'start' && selectedMode === 'illithid'
-                    ? 'opacity-100'
-                    : gameState === 'start'
-                      ? 'opacity-100'
-                      : 'opacity-30'
-                }`}
-              >
-                <MindFlayerIcon />
-                <span className="text-purple-400 text-xs font-serif">
-                  ИЛЛИТИД
-                </span>
-              </div>
-              <div
-                className={`flex items-center gap-1 transition-opacity ${
-                  gameState !== 'start' && selectedMode === 'darkUrge'
-                    ? 'opacity-100'
-                    : gameState === 'start'
-                      ? 'opacity-100'
-                      : 'opacity-30'
-                }`}
-              >
-                <DarkUrgeIcon />
-                <span className="text-red-400 text-xs font-serif">СОБЛАЗН</span>
-              </div>
-            </div>
+            )}
           </div>
         </Panel>
 
@@ -526,12 +597,18 @@ export default function BG3Millionaire() {
 
               <button
                 onClick={startGame}
-                className="px-8 py-3 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-50 font-bold text-lg tracking-wide border-4 border-amber-600 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 transition-all transform hover:scale-105 font-serif"
+                disabled={!selectedMode}
+                className={`px-8 py-3 font-bold text-lg tracking-wide border-4 transition-all transform font-serif ${
+                  selectedMode
+                    ? 'bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-50 border-amber-600 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 hover:scale-105'
+                    : 'bg-gradient-to-b from-stone-700 via-stone-800 to-stone-900 text-stone-500 border-stone-600 cursor-not-allowed'
+                }`}
                 style={{
-                  boxShadow:
-                    '0 0 25px rgba(217, 119, 6, 0.5), inset 0 1px 0 rgba(251, 191, 36, 0.3)',
+                  boxShadow: selectedMode
+                    ? '0 0 25px rgba(217, 119, 6, 0.5), inset 0 1px 0 rgba(251, 191, 36, 0.3)'
+                    : 'none',
                   borderStyle: 'ridge',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+                  textShadow: selectedMode ? '0 2px 4px rgba(0,0,0,0.8)' : 'none',
                 }}
               >
                 ⚔ НАЧАТЬ ПРИКЛЮЧЕНИЕ ⚔
@@ -829,7 +906,7 @@ export default function BG3Millionaire() {
               )}
 
               <button
-                onClick={startGame}
+                onClick={newGame}
                 className="px-8 py-3 bg-gradient-to-b from-amber-700 via-amber-800 to-amber-900 text-amber-50 font-bold tracking-wide border-4 border-amber-600 hover:from-amber-600 hover:via-amber-700 hover:to-amber-800 transition-all transform hover:scale-105 font-serif"
                 style={{
                   boxShadow:
