@@ -98,7 +98,7 @@ export default function BG3Millionaire() {
 
   /** Current soundtrack based on game state and mode */
   const [currentTrack, setCurrentTrack] = useState<string>(
-    `${import.meta.env.BASE_URL}music/MainMenu.mp3`
+    `${import.meta.env.BASE_URL}music/MainMenu.ogg`
   );
 
   // ============================================
@@ -121,13 +121,13 @@ export default function BG3Millionaire() {
 
     if (gameState === 'start') {
       // Main menu - always play MainMenu until game starts
-      newTrack = `${basePath}music/MainMenu.mp3`;
+      newTrack = `${basePath}music/MainMenu.ogg`;
     } else if (gameState === 'playing' && selectedMode) {
       // Game started - play character theme
       const trackMap: Record<DifficultyMode, string> = {
-        hero: `${basePath}music/Hero.mp3`,
-        illithid: `${basePath}music/Illithid.mp3`,
-        darkUrge: `${basePath}music/DarkUrge.mp3`,
+        hero: `${basePath}music/Hero.ogg`,
+        illithid: `${basePath}music/Illithid.ogg`,
+        darkUrge: `${basePath}music/DarkUrge.ogg`,
       };
       newTrack = trackMap[selectedMode];
     } else if (gameState === 'lost') {
@@ -137,13 +137,13 @@ export default function BG3Millionaire() {
     } else if (selectedMode) {
       // Game over screens (won, took_money) - keep character theme
       const trackMap: Record<DifficultyMode, string> = {
-        hero: `${basePath}music/Hero.mp3`,
-        illithid: `${basePath}music/Illithid.mp3`,
-        darkUrge: `${basePath}music/DarkUrge.mp3`,
+        hero: `${basePath}music/Hero.ogg`,
+        illithid: `${basePath}music/Illithid.ogg`,
+        darkUrge: `${basePath}music/DarkUrge.ogg`,
       };
       newTrack = trackMap[selectedMode];
     } else {
-      newTrack = `${basePath}music/MainMenu.mp3`;
+      newTrack = `${basePath}music/MainMenu.ogg`;
     }
 
     if (newTrack !== currentTrack) {
@@ -268,9 +268,9 @@ export default function BG3Millionaire() {
     // Switch to character theme
     const basePath = import.meta.env.BASE_URL;
     const trackMap: Record<DifficultyMode, string> = {
-      hero: `${basePath}music/Hero.mp3`,
-      illithid: `${basePath}music/Illithid.mp3`,
-      darkUrge: `${basePath}music/DarkUrge.mp3`,
+      hero: `${basePath}music/Hero.ogg`,
+      illithid: `${basePath}music/Illithid.ogg`,
+      darkUrge: `${basePath}music/DarkUrge.ogg`,
     };
     switchTrack(trackMap[selectedMode]);
 
@@ -296,7 +296,7 @@ export default function BG3Millionaire() {
 
     // Switch to main menu music
     const basePath = import.meta.env.BASE_URL;
-    switchTrack(`${basePath}music/MainMenu.mp3`);
+    switchTrack(`${basePath}music/MainMenu.ogg`);
 
     setGameState('start');
     setSelectedMode(null);
@@ -358,7 +358,7 @@ export default function BG3Millionaire() {
           // Start GameOver soundtrack
           if (audio) {
             const basePath = import.meta.env.BASE_URL;
-            const gameOverTrack = `${basePath}music/GameOver.mp3`;
+            const gameOverTrack = `${basePath}music/GameOver.ogg`;
             audio.src = gameOverTrack;
             audio.volume = 0.6; // Music volume
             setCurrentTrack(gameOverTrack);
@@ -543,8 +543,8 @@ export default function BG3Millionaire() {
           fontFamily: 'Georgia, serif',
         }}
       >
-        {/* Background Music */}
-        <audio id="bg-music" loop preload="auto" src={currentTrack} />
+        {/* Background Music - preload=none for lazy loading */}
+        <audio id="bg-music" loop preload="none" src={currentTrack} />
 
         <div className="max-w-4xl mx-auto">
           {/* Header */}
