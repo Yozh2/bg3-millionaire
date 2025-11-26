@@ -39,11 +39,12 @@ import {
   playFiftyFifty,
   playScrollUnfold,
   playTavernCheer,
-  playCoins,
   playCorrect,
-  playWrong,
   playModeSelect,
   playGameStart,
+  playNewStart,
+  playTakeMoney,
+  setSoundEnabled,
 } from './utils';
 
 /**
@@ -129,8 +130,12 @@ export default function BG3Millionaire() {
         darkUrge: `${basePath}music/DarkUrge.mp3`,
       };
       newTrack = trackMap[selectedMode];
+    } else if (gameState === 'lost') {
+      // Game lost - GameOver track will be started manually after CriticalFailure
+      // Don't auto-switch here, the handleAnswer logic manages this
+      return;
     } else if (selectedMode) {
-      // Game over screens - keep character theme
+      // Game over screens (won, took_money) - keep character theme
       const trackMap: Record<DifficultyMode, string> = {
         hero: `${basePath}music/Hero.mp3`,
         illithid: `${basePath}music/Illithid.mp3`,
@@ -226,6 +231,7 @@ export default function BG3Millionaire() {
       setIsMusicPlaying(false);
       setUserDisabledMusic(true);
       userDisabledMusicRef.current = true;
+      setSoundEnabled(false); // Sync UI sounds with music
     } else {
       audio
         .play()
@@ -235,6 +241,7 @@ export default function BG3Millionaire() {
           musicEverEnabledRef.current = true;
           setUserDisabledMusic(false);
           userDisabledMusicRef.current = false;
+          setSoundEnabled(true); // Sync UI sounds with music
         })
         .catch((err: Error) => console.log('Music play failed:', err));
     }
@@ -278,6 +285,9 @@ export default function BG3Millionaire() {
 
   /** Return to start screen for new game with difficulty selection */
   const newGame = () => {
+    // Play NewStart sound when returning from game over screen
+    playNewStart();
+
     // Switch to main menu music
     const basePath = import.meta.env.BASE_URL;
     switchTrack(`${basePath}music/MainMenu.mp3`);
@@ -323,13 +333,45 @@ export default function BG3Millionaire() {
           setEliminatedAnswers([]);
         }
       } else {
-        // Wrong answer - play defeat sound
-        playWrong();
-        setTimeout(() => playDefeat(), 300);
+        // Wrong answer - play defeat sequence (CriticalFailure + GameOver)
         const lastGuaranteed = guaranteedPrizes
           .filter((p: number) => p < currentQuestion)
           .pop();
         setWonPrize(lastGuaranteed !== undefined ? prizes[lastGuaranteed] : '0');
+
+        // Stop current music, play CriticalFailure, then start GameOver track
+        setTimeout(async () => {
+          const audio = document.getElementById('bg-music') as HTMLAudioElement;
+          if (audio) {
+            audio.pause();
+          }
+
+          // Play CriticalFailure and wait for it to finish
+          await playDefeat();
+
+          // Start GameOver soundtrack
+          if (audio) {
+            const basePath = import.meta.env.BASE_URL;
+            const gameOverTrack = `${basePath}music/GameOver.mp3`;
+            audio.src = gameOverTrack;
+            setCurrentTrack(gameOverTrack);
+
+            const shouldPlay =
+              musicEverEnabledRef.current && !userDisabledMusicRef.current;
+            if (shouldPlay) {
+              // Wait for track to be ready before playing
+              const handleCanPlay = () => {
+                audio.play()
+                  .then(() => setIsMusicPlaying(true))
+                  .catch((err) => console.log('GameOver track failed:', err));
+                audio.removeEventListener('canplay', handleCanPlay);
+              };
+              audio.addEventListener('canplay', handleCanPlay);
+              audio.load();
+            }
+          }
+        }, 300);
+
         setGameState('lost');
       }
     }, 2000);
@@ -338,7 +380,7 @@ export default function BG3Millionaire() {
   /** Take current winnings and leave */
   const takeTheMoney = () => {
     if (currentQuestion === 0) return;
-    playCoins();
+    playTakeMoney();
     setWonPrize(prizes[currentQuestion - 1]);
     setGameState('took_money');
   };
@@ -365,9 +407,6 @@ export default function BG3Millionaire() {
   const usePhoneAFriend = () => {
     if (!phoneAFriend || selectedAnswer !== null) return;
 
-    // Play scroll unfold sound
-    playScrollUnfold();
-
     setPhoneAFriend(false);
     const correct = sortedQuestions[currentQuestion].correct;
 
@@ -381,6 +420,9 @@ export default function BG3Millionaire() {
 
     const name = companionNames[Math.floor(Math.random() * companionNames.length)];
     const answerText = sortedQuestions[currentQuestion].answers[suggestedAnswer];
+
+    // Play companion's voice if available
+    playScrollUnfold(name);
 
     const phrases = [
       `Я ${isConfident ? 'уверен' : 'думаю'}, что это "${answerText}"`,
@@ -591,7 +633,7 @@ export default function BG3Millionaire() {
                 <div className="flex justify-center gap-4 md:gap-6">
                   {/* Hero Mode */}
                   <button
-                    onClick={() => { setSelectedMode('hero'); playModeSelect(); }}
+                    onClick={() => { setSelectedMode('hero'); playModeSelect('hero'); }}
                     className={`flex flex-col items-center gap-2 p-3 md:p-4 border-4 transition-all transform hover:scale-105 ${
                       selectedMode === 'hero'
                         ? 'border-blue-500 bg-blue-950/50'
@@ -622,7 +664,7 @@ export default function BG3Millionaire() {
 
                   {/* Illithid Mode */}
                   <button
-                    onClick={() => { setSelectedMode('illithid'); playModeSelect(); }}
+                    onClick={() => { setSelectedMode('illithid'); playModeSelect('illithid'); }}
                     className={`flex flex-col items-center gap-2 p-3 md:p-4 border-4 transition-all transform hover:scale-105 ${
                       selectedMode === 'illithid'
                         ? 'border-purple-500 bg-purple-950/50'
@@ -653,7 +695,7 @@ export default function BG3Millionaire() {
 
                   {/* Dark Urge Mode */}
                   <button
-                    onClick={() => { setSelectedMode('darkUrge'); playModeSelect(); }}
+                    onClick={() => { setSelectedMode('darkUrge'); playModeSelect('darkUrge'); }}
                     className={`flex flex-col items-center gap-2 p-3 md:p-4 border-4 transition-all transform hover:scale-105 ${
                       selectedMode === 'darkUrge'
                         ? 'border-red-500 bg-red-950/50'

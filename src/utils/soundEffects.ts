@@ -19,6 +19,24 @@ interface ToneConfig {
 let audioContext: AudioContext | null = null;
 let audioSupported = true;
 
+// Global sound enabled state (controlled by the game)
+let soundEnabled = false;
+
+/**
+ * Set global sound enabled state.
+ * Call this when user toggles sound on/off.
+ */
+export const setSoundEnabled = (enabled: boolean): void => {
+  soundEnabled = enabled;
+};
+
+/**
+ * Get current sound enabled state.
+ */
+export const isSoundEnabled = (): boolean => {
+  return soundEnabled;
+};
+
 // Cache for preloaded audio elements
 const audioCache: Map<string, HTMLAudioElement> = new Map();
 
@@ -30,9 +48,11 @@ const getBasePath = (): string => {
 };
 
 /**
- * Play an MP3 sound file
+ * Play an MP3 sound file from sounds directory
  */
 const playMp3 = (filename: string, volume = 0.5): void => {
+  if (!soundEnabled) return;
+
   const path = `${getBasePath()}sounds/${filename}`;
 
   // Try to use cached audio element
@@ -50,11 +70,32 @@ const playMp3 = (filename: string, volume = 0.5): void => {
 };
 
 /**
+ * Play an MP3 sound file from voices directory (companion voice lines)
+ */
+const playVoice = (filename: string, volume = 0.5): void => {
+  if (!soundEnabled) return;
+
+  const path = `${getBasePath()}voices/${filename}`;
+
+  let audio = audioCache.get(path);
+
+  if (!audio) {
+    audio = new Audio(path);
+    audioCache.set(path, audio);
+  }
+
+  const clone = audio.cloneNode() as HTMLAudioElement;
+  clone.volume = volume;
+  clone.play().catch((err) => console.log('Voice play failed:', err));
+};
+
+/**
  * Initialize the Web Audio API context.
  * Must be called after a user interaction (browser requirement).
  * Returns null if Web Audio API is not supported.
  */
 const getAudioContext = (): AudioContext | null => {
+  if (!soundEnabled) return null;
   if (!audioSupported) {
     return null;
   }
@@ -151,36 +192,42 @@ export const playVictory = (): void => {
 };
 
 /**
- * Defeat sound - dramatic descending tones with dice critical fail feel.
+ * Defeat sound - plays CriticalFailure.mp3 and returns Promise
+ * that resolves when the sound finishes playing.
+ * This allows the caller to chain the GameOver soundtrack after.
  */
-export const playDefeat = (): void => {
-  const ctx = getAudioContext();
-  if (!ctx) return;
+export const playDefeat = (): Promise<void> => {
+  return new Promise((resolve) => {
+    if (!soundEnabled) {
+      resolve();
+      return;
+    }
 
-  // Create a low rumbling base
-  const oscillator1 = ctx.createOscillator();
-  const gainNode1 = ctx.createGain();
-  oscillator1.connect(gainNode1);
-  gainNode1.connect(ctx.destination);
+    const path = `${getBasePath()}sounds/CriticalFailure.mp3`;
 
-  oscillator1.frequency.value = 80;
-  oscillator1.type = 'sawtooth';
+    let audio = audioCache.get(path);
+    if (!audio) {
+      audio = new Audio(path);
+      audioCache.set(path, audio);
+    }
 
-  const now = ctx.currentTime;
-  gainNode1.gain.setValueAtTime(0.2, now);
-  gainNode1.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+    const clone = audio.cloneNode() as HTMLAudioElement;
+    clone.volume = 0.6;
 
-  oscillator1.start(now);
-  oscillator1.stop(now + 0.8);
+    clone.onended = () => {
+      resolve();
+    };
 
-  // Descending tone for dramatic effect
-  const descending: ToneConfig[] = [
-    { frequency: 392, duration: 0.2, type: 'square', volume: 0.2 }, // G4
-    { frequency: 311.13, duration: 0.2, type: 'square', volume: 0.2 }, // Eb4
-    { frequency: 233.08, duration: 0.3, type: 'square', volume: 0.25 }, // Bb3
-    { frequency: 146.83, duration: 0.5, type: 'sawtooth', volume: 0.25 }, // D3
-  ];
-  playSequence(descending, 0.15);
+    clone.onerror = () => {
+      console.log('CriticalFailure sound play failed');
+      resolve();
+    };
+
+    clone.play().catch((err) => {
+      console.log('CriticalFailure play failed:', err);
+      resolve();
+    });
+  });
 };
 
 /**
@@ -192,11 +239,37 @@ export const playFiftyFifty = (): void => {
 };
 
 /**
- * Scroll/Message sound - Astarion's voice.
- * Uses AstarionYesDarling.mp3
+ * Companion voice lines mapping.
+ * Maps companion names to their voice file names.
+ * Files are stored in public/voices/ directory.
  */
-export const playScrollUnfold = (): void => {
-  playMp3('AstarionYesDarling.mp3', 0.5);
+const companionVoiceMap: Record<string, string> = {
+  'Астарион': 'Astarion.mp3',
+  'Гейл': 'Gale.mp3',
+  'Шэдоухарт': 'Shadowheart.mp3',
+  'Карлах': 'Karlach.mp3',
+  // Add more companions as voice files become available:
+  // 'Лаэзель': 'Laezel.mp3',
+  // 'Уилл': 'Wyll.mp3',
+  // 'Минтара': 'Minthara.mp3',
+  // 'Халсин': 'Halsin.mp3',
+  // 'Джахейра': 'Jaheira.mp3',
+  // 'Минск': 'Minsc.mp3',
+};
+
+/**
+ * Scroll/Message sound - plays companion's voice if available.
+ * Falls back to no sound if companion voice file is not available.
+ * @param companionName - The name of the companion sending the message
+ */
+export const playScrollUnfold = (companionName?: string): void => {
+  if (!companionName) return;
+
+  const voiceFile = companionVoiceMap[companionName];
+  if (voiceFile) {
+    playVoice(voiceFile, 0.6);
+  }
+  // No sound if companion voice is not available yet
 };
 
 /**
@@ -278,45 +351,35 @@ export const playWrong = (): void => {
 };
 
 /**
- * Mode selection sound - magical confirmation.
+ * Mode selection sound - plays character-specific sound.
+ * Uses Selected{Mode}.mp3 files
  */
-export const playModeSelect = (): void => {
-  const ctx = getAudioContext();
-  if (!ctx) return;
+export const playModeSelect = (mode?: string): void => {
+  if (!mode) {
+    playMp3('ClickStandard.mp3', 0.4);
+    return;
+  }
 
-  const now = ctx.currentTime;
+  const soundMap: Record<string, string> = {
+    hero: 'SelectedHero.mp3',
+    illithid: 'SelectedMindFlayer.mp3',
+    darkUrge: 'SelectedDarkUrge.mp3',
+  };
 
-  const osc1 = ctx.createOscillator();
-  const gain1 = ctx.createGain();
-  osc1.connect(gain1);
-  gain1.connect(ctx.destination);
+  const sound = soundMap[mode];
+  if (sound) {
+    playMp3(sound, 0.5);
+  } else {
+    playMp3('ClickStandard.mp3', 0.4);
+  }
+};
 
-  osc1.type = 'sine';
-  osc1.frequency.setValueAtTime(400, now);
-  osc1.frequency.linearRampToValueAtTime(600, now + 0.15);
-
-  gain1.gain.setValueAtTime(0.2, now);
-  gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-
-  osc1.start(now);
-  osc1.stop(now + 0.25);
-
-  // Add shimmer using Web Audio API scheduling
-  const shimmer = ctx.createOscillator();
-  const shimmerGain = ctx.createGain();
-  shimmer.connect(shimmerGain);
-  shimmerGain.connect(ctx.destination);
-
-  shimmer.type = 'sine';
-  shimmer.frequency.value = 1000;
-
-  const shimmerStart = now + 0.05;
-  shimmerGain.gain.setValueAtTime(0, now);
-  shimmerGain.gain.setValueAtTime(0.1, shimmerStart);
-  shimmerGain.gain.exponentialRampToValueAtTime(0.01, shimmerStart + 0.2);
-
-  shimmer.start(shimmerStart);
-  shimmer.stop(shimmerStart + 0.25);
+/**
+ * Take money sound - victory fanfare.
+ * Uses Victory.mp3
+ */
+export const playTakeMoney = (): void => {
+  playMp3('Victory.mp3', 0.5);
 };
 
 /**
@@ -325,4 +388,15 @@ export const playModeSelect = (): void => {
  */
 export const playGameStart = (): void => {
   playMp3('ClickStartAdventure.mp3', 0.5);
+};
+
+/**
+ * New start sound - plays after ClickStartAdventure when restarting game.
+ * Uses NewStart.mp3
+ */
+export const playNewStart = (): void => {
+  // Delay slightly to play after the click sound
+  setTimeout(() => {
+    playMp3('NewStart.mp3', 0.5);
+  }, 200);
 };
