@@ -129,26 +129,31 @@ export default function BG3Millionaire() {
     setShuffledAnswers(shuffleArray([0, 1, 2, 3]));
   };
 
-  /** Sort questions by difficulty, shuffling within each difficulty group */
+  /** Shuffle questions within difficulty groups and set them */
+  const shuffleAndSetQuestions = (mode: DifficultyMode) => {
+    const questions = getQuestionsForMode(mode);
+
+    // Group questions by difficulty (1, 2, 3 = easy, medium, hard)
+    const grouped: Record<number, Question[]> = {};
+    questions.forEach((q: Question) => {
+      if (!grouped[q.difficulty]) grouped[q.difficulty] = [];
+      grouped[q.difficulty].push(q);
+    });
+
+    // Shuffle within each group and flatten, sorted by difficulty
+    const sortedDifficulties = Object.keys(grouped).map(Number).sort((a, b) => a - b);
+    const shuffledQuestions: Question[] = sortedDifficulties.flatMap(
+      difficulty => shuffleArray(grouped[difficulty])
+    );
+
+    setSortedQuestions(shuffledQuestions);
+    shuffleCurrentAnswers(); // Shuffle answers for first question
+  };
+
+  /** Initialize questions when mode is selected */
   useEffect(() => {
     if (selectedMode) {
-      const questions = getQuestionsForMode(selectedMode);
-
-      // Group questions by difficulty
-      const grouped: Record<number, Question[]> = {};
-      questions.forEach((q: Question) => {
-        if (!grouped[q.difficulty]) grouped[q.difficulty] = [];
-        grouped[q.difficulty].push(q);
-      });
-
-      // Shuffle within each group and flatten, sorted by difficulty
-      const sortedDifficulties = Object.keys(grouped).map(Number).sort((a, b) => a - b);
-      const shuffledQuestions: Question[] = sortedDifficulties.flatMap(
-        difficulty => shuffleArray(grouped[difficulty])
-      );
-
-      setSortedQuestions(shuffledQuestions);
-      shuffleCurrentAnswers(); // Shuffle answers for first question
+      shuffleAndSetQuestions(selectedMode);
     }
   }, [selectedMode]);  /** Switch soundtrack based on game state and selected mode */
   useEffect(() => {
@@ -310,10 +315,10 @@ export default function BG3Millionaire() {
     };
     switchTrack(trackMap[selectedMode]);
 
+    // Shuffle and set questions for this playthrough
+    shuffleAndSetQuestions(selectedMode);
+
     // Reset game state
-    const questions = getQuestionsForMode(selectedMode);
-    const sorted = [...questions].sort((a, b) => a.difficulty - b.difficulty);
-    setSortedQuestions(sorted);
     setCurrentQuestion(0);
     setSelectedAnswer(null);
     setGameState('playing');
@@ -814,10 +819,13 @@ export default function BG3Millionaire() {
             <div className="md:col-span-3 space-y-3">
               {/* Question Panel */}
               <Panel className="p-1">
-                <PanelHeader>
-                  ✦ ВОПРОС #{currentQuestion + 1} ✦ СЛОЖНОСТЬ:{' '}
-                  {'★'.repeat(sortedQuestions[currentQuestion].difficulty)}
-                  {'☆'.repeat(5 - sortedQuestions[currentQuestion].difficulty)}
+                <PanelHeader align="between">
+                  <span>✦ ВОПРОС #{currentQuestion + 1} ✦</span>
+                  <span>
+                    СЛОЖНОСТЬ:{' '}
+                    {'★'.repeat(sortedQuestions[currentQuestion].difficulty)}
+                    {'☆'.repeat(3 - sortedQuestions[currentQuestion].difficulty)}
+                  </span>
                 </PanelHeader>
                 <div className="p-4">
                   <div className="flex justify-between items-center mb-3">
@@ -991,11 +999,18 @@ export default function BG3Millionaire() {
             <Panel className="p-1 h-fit">
               <PanelHeader>✦ СПИСОК НАГРАД ✦</PanelHeader>
               <div className="p-2 space-y-1">
-                {prizes
-                  .map((prize: string, index: number) => {
+                {[...prizes].reverse().map((prize: string, reverseIndex: number) => {
+                    // Convert reverse index to actual question index (0-14)
+                    const index = 14 - reverseIndex;
+                    const questionNumber = index + 1; // 1-15
                     const isGuaranteed = guaranteedPrizes.includes(index);
                     const isCurrent = index === currentQuestion;
                     const isPassed = index < currentQuestion;
+                    // Show difficulty stars for milestone questions (5, 10, 15)
+                    // Question 5 (index 4) = end of difficulty 1
+                    // Question 10 (index 9) = end of difficulty 2
+                    // Question 15 (index 14) = end of difficulty 3
+                    const difficultyLevel = index < 5 ? 1 : index < 10 ? 2 : 3;
 
                     return (
                       <div
@@ -1007,7 +1022,7 @@ export default function BG3Millionaire() {
                               ? `${theme.bgPrizePassed} ${theme.textMuted} ${theme.border}`
                               : isGuaranteed
                                 ? 'bg-yellow-950/40 text-yellow-600 border-yellow-700'
-                                : 'text-stone-600 border-stone-800'
+                                : 'text-stone-300 border-stone-700'
                         }`}
                         style={
                           isCurrent
@@ -1018,13 +1033,20 @@ export default function BG3Millionaire() {
                             : { borderStyle: 'solid' }
                         }
                       >
-                        <span>{String(15 - index).padStart(2, '0')}</span>
-                        <span>{prize}</span>
-                        {isGuaranteed && <StarIcon />}
+                        <span>{String(questionNumber).padStart(2, '0')}</span>
+                        <span className="flex-1 flex justify-center">
+                          <span className="w-20 text-right">{prize}</span>
+                        </span>
+                        <span className="w-8 text-right">
+                          {isGuaranteed && (
+                            <span className="text-yellow-500" title={`Сложность ${difficultyLevel}★`}>
+                              {'★'.repeat(difficultyLevel)}
+                            </span>
+                          )}
+                        </span>
                       </div>
                     );
-                  })
-                  .reverse()}
+                  })}
               </div>
             </Panel>
           </div>

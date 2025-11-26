@@ -9,6 +9,7 @@ import { Question, DifficultyMode } from '../types';
 // HERO MODE - Basic BG3 knowledge
 // ============================================
 export const heroQuestions: Question[] = [
+  // Difficulty 1 - Easy (questions 1-5)
   {
     question: 'Как зовут вампира-спутника, который может присоединиться к вашей группе?',
     answers: ['Гейл', 'Астарион', 'Уилл', 'Халсин'],
@@ -37,8 +38,9 @@ export const heroQuestions: Question[] = [
     question: 'Как называется город, где происходят события третьего акта?',
     answers: ['Невервинтер', 'Врата Балдура', 'Глубоководье', 'Эльтурель'],
     correct: 1,
-    difficulty: 2,
+    difficulty: 1,
   },
+  // Difficulty 2 - Medium (questions 6-10)
   {
     question: 'Кто является лидером друидов в Изумрудной Роще?',
     answers: ['Халсин', 'Кагга', 'Нетти', 'Рат'],
@@ -61,14 +63,15 @@ export const heroQuestions: Question[] = [
     question: 'Кто из компаньонов является колдуном?',
     answers: ['Гейл', 'Астарион', 'Уилл', 'Шэдоухарт'],
     correct: 2,
-    difficulty: 3,
+    difficulty: 2,
   },
   {
     question: 'Как зовут хомяка Минска?',
     answers: ['Бу', 'Пух', 'Шу', 'Ву'],
     correct: 0,
-    difficulty: 3,
+    difficulty: 2,
   },
+  // Difficulty 3 - Hard (questions 11-15)
   {
     question: 'Какой богине служит Шэдоухарт?',
     answers: ['Селунэ', 'Шар', 'Мистра', 'Ллос'],
@@ -85,19 +88,19 @@ export const heroQuestions: Question[] = [
     question: 'Кто такой Иссохший?',
     answers: ['Торговец', 'Скелет-некромант', 'Древнее божество', 'Ты после пьянки'],
     correct: 2,
-    difficulty: 4,
+    difficulty: 3,
   },
   {
     question: 'Какой титул носит герцог Равенгард?',
     answers: ['Великий герцог', 'Верховный маршал', 'Лорд-протектор', 'Регент'],
     correct: 0,
-    difficulty: 4,
+    difficulty: 3,
   },
   {
     question: 'Кто из персонажей НЕ может стать романтическим партнёром?',
     answers: ['Карлах', 'Минтара', 'Халсин', 'Минск'],
     correct: 3,
-    difficulty: 4,
+    difficulty: 3,
   },
 ];
 
@@ -105,95 +108,98 @@ export const heroQuestions: Question[] = [
 // ILLITHID MODE - Advanced BG3 & D&D lore
 // ============================================
 export const illithidQuestions: Question[] = [
+  // Difficulty 1 - Easy (questions 1-5)
   {
     question: 'Как называется древняя империя, создавшая Корону Карсуса?',
     answers: ['Калимшан', 'Нетерил', 'Миф Драннор', 'Кормир'],
     correct: 1,
-    difficulty: 2,
+    difficulty: 1,
   },
   {
     question: 'Какая богиня является покровительницей магии в Забытых Королевствах?',
     answers: ['Селунэ', 'Шар', 'Мистра', 'Сьюн'],
     correct: 2,
-    difficulty: 2,
+    difficulty: 1,
   },
   {
     question: 'Кто является лидером культа Абсолют в начале игры?',
     answers: ['Кетерик Торм', 'Орин Красная', 'Энвер Гортэш', 'Все трое'],
     correct: 3,
-    difficulty: 2,
+    difficulty: 1,
   },
   {
     question: 'Что такое церемофоз?',
     answers: ['Ритуал гитьянки', 'Процесс превращения в иллитида', 'Магия некромантии', 'Тип заклинания'],
     correct: 1,
-    difficulty: 3,
+    difficulty: 1,
   },
   {
     question: 'Кто является богиней тьмы и утраты, сестрой Селунэ?',
     answers: ['Ллос', 'Тиамат', 'Шар', 'Талона'],
     correct: 2,
-    difficulty: 3,
+    difficulty: 1,
   },
+  // Difficulty 2 - Medium (questions 6-10)
   {
     question: 'Какой артефакт необходим для уничтожения Абсолюта?',
     answers: ['Нетерильские камни', 'Корона Карсуса', 'Око Баала', 'Сфера Аннигиляции'],
     correct: 0,
-    difficulty: 3,
+    difficulty: 2,
   },
   {
     question: 'Как называется демоническая сущность, с которой заключил пакт Уилл?',
     answers: ['Мефистофель', 'Зариэль', 'Мизора', 'Аскодей'],
     correct: 2,
-    difficulty: 3,
+    difficulty: 2,
   },
   {
     question: 'Что случилось с Гейлом до событий игры?',
     answers: ['Был проклят вампиром', 'Поглотил нетерийское плетение', 'Заключил пакт с дьяволом', 'Стал личом'],
     correct: 1,
-    difficulty: 4,
+    difficulty: 2,
   },
   {
     question: 'Как называется измерение, откуда родом иллитиды?',
     answers: ['Девять Адов', 'Дальний Предел', 'Астральный План', 'Царство Теней'],
     correct: 2,
-    difficulty: 4,
+    difficulty: 2,
   },
   {
     question: 'Кто создал личинок, заражающих героев?',
     answers: ['Абсолют', 'Старший Мозг', 'Влаакит', 'Орфей'],
     correct: 1,
-    difficulty: 4,
+    difficulty: 2,
   },
+  // Difficulty 3 - Hard (questions 11-15)
   {
     question: 'В чём недуг Карлах?',
     answers: ['Вампиризм', 'Инфернальный двигатель в груди', 'Метка Баала', 'Проклятие ликантропии'],
     correct: 1,
-    difficulty: 4,
+    difficulty: 3,
   },
   {
     question: 'Кто такой Орфей?',
     answers: ['Древний дракон', 'Пленённый принц гитьянки', 'Верховный иллитид', 'Аватар Баала'],
     correct: 1,
-    difficulty: 4,
+    difficulty: 3,
   },
   {
     question: 'Как называется клинок Лаэзель в начале игры?',
     answers: ['Двуручный меч', 'Астральный клинок', 'Меч гитьянки', 'Серебрянный меч'],
     correct: 0,
-    difficulty: 5,
+    difficulty: 3,
   },
   {
     question: 'Что находится в Проклятых Землях?',
     answers: ['Храм Селунэ', 'Лунные Башни', 'Крепость гоблинов', 'Город дроу'],
     correct: 1,
-    difficulty: 5,
+    difficulty: 3,
   },
   {
     question: 'Какая раса правила Фаэруном до эльфов?',
     answers: ['Драконы', 'Создатели фей', 'Иллитиды', 'Гиганты'],
     correct: 1,
-    difficulty: 5,
+    difficulty: 3,
   },
 ];
 
@@ -201,95 +207,98 @@ export const illithidQuestions: Question[] = [
 // DARK URGE MODE - Expert BG3 knowledge, Dark Urge storyline
 // ============================================
 export const darkUrgeQuestions: Question[] = [
+  // Difficulty 1 - Easy (questions 1-5)
   {
     question: 'Кем был Тёмный Соблазн до потери памяти?',
     answers: ['Жрецом Баала', 'Избранным Баала', 'Аватаром Баала', 'Слугой Мёртвой Тройки'],
     correct: 1,
-    difficulty: 3,
+    difficulty: 1,
   },
   {
     question: 'Кто является отцом Тёмного Соблазна?',
     answers: ['Горион', 'Саревок', 'Баал', 'Энвер Гортэш'],
     correct: 2,
-    difficulty: 3,
+    difficulty: 1,
   },
   {
     question: 'Как зовут дворецкого Тёмного Соблазна?',
     answers: ['Скелларак', 'Скраг', 'Скелеритас Гнус', 'Склонн'],
     correct: 2,
-    difficulty: 3,
+    difficulty: 1,
   },
   {
     question: 'Что делала Орин с Тёмным Соблазном?',
     answers: ['Служила ему', 'Предала и украла его место', 'Была его наставником', 'Не знала о нём'],
     correct: 1,
-    difficulty: 4,
+    difficulty: 1,
   },
   {
     question: 'Кем Орин приходится Тёмному Соблазну?',
     answers: ['Сестра', 'Дочь', 'Мать', 'Не родственники'],
     correct: 0,
-    difficulty: 4,
+    difficulty: 1,
   },
+  // Difficulty 2 - Medium (questions 6-10)
   {
     question: 'Где находится Храм Баала?',
     answers: ['Под Вратами Балдура', 'В Царстве Теней', 'В Подземье', 'В Девяти Адах'],
     correct: 0,
-    difficulty: 4,
+    difficulty: 2,
   },
   {
     question: 'Из-за чего именно Тёмный Соблазн считался достойнейшим на роль Избранного?',
     answers: ['Сила воли', 'Кровное наследие', 'Жестокость', 'Магические способности'],
     correct: 1,
-    difficulty: 4,
+    difficulty: 2,
   },
   {
     question: 'Что символизируют руки Баала?',
     answers: ['Милосердие и гнев', 'Убийство и воскрешение', 'Кровь и кости', 'Смерть и возрождение'],
     correct: 1,
-    difficulty: 4,
+    difficulty: 2,
   },
   {
     question: 'Кто был первой жертвой, которую Тёмный Соблазн убил в прошлом?',
     answers: ['Невинный путник', 'Его собственная мать', 'Культист Баала', 'Это неизвестно'],
     correct: 1,
-    difficulty: 5,
+    difficulty: 2,
   },
   {
     question: 'Как называется особая форма Орин?',
     answers: ['Терзающая (Tearing)', 'Образ Убийцы (Slayer)', 'Нетленная (Undying)', 'Оскверняющая (Desecrated)'],
     correct: 1,
-    difficulty: 5,
+    difficulty: 2,
   },
+  // Difficulty 3 - Hard (questions 11-15)
   {
     question: 'Что нужно сделать, чтобы победить Баала как Тёмный Соблазн?',
     answers: ['Убить Орин', 'Отвергнуть его дар', 'Принести себя в жертву', 'Стать новым богом убийств'],
     correct: 1,
-    difficulty: 5,
+    difficulty: 3,
   },
   {
     question: 'Какое заклинание получает Тёмный Соблазн от Баала?',
     answers: ['Власть над смертью', 'Убийственный инстинкт', 'Кровавое безумие', 'Неудержимое убийство'],
     correct: 3,
-    difficulty: 5,
+    difficulty: 3,
   },
   {
     question: 'Что происходит с компаньоном, если Тёмный Соблазн не сопротивляется побуждениям?',
     answers: ['Компаньон уходит', 'Компаньон умирает от рук Соблазна', 'Ничего', 'Компаньон предаёт'],
     correct: 1,
-    difficulty: 5,
+    difficulty: 3,
   },
   {
     question: 'Кто может полностью исцелить Тёмный Соблазн от проклятия Баала?',
     answers: ['Иссохший', 'Шэдоухарт', 'Никто', 'Любой жрец'],
     correct: 2,
-    difficulty: 5,
+    difficulty: 3,
   },
   {
     question: 'Как называется секретная концовка для Тёмного Соблазна?',
     answers: ['Божественное Вознесение', 'Абсолютная Власть', 'Баалово Наследие', 'Грехи Отца'],
     correct: 3,
-    difficulty: 5,
+    difficulty: 3,
   },
 ];
 
